@@ -20,11 +20,7 @@ pipeline {
             }
         }
         
-        stage('Sonar Analysis') {
-            steps {
-                // Add Sonar analysis steps here for Windows
-            }
-        }
+        
         
         stage('Archive Artifacts') {
             steps {
