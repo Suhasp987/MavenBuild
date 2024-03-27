@@ -1,30 +1,26 @@
-node(){
-
-	def sonarHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-	
-	stage('Code Checkout'){
-		checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'GitHubCreds', url: 'https://github.com/anujdevopslearn/MavenBuild']])
+node('master'){
+	stage('checkout code'){
+		checkout scm
 	}
-	stage('Build Automation'){
-		sh """
-			ls -lart
-			mvn clean install
-			ls -lart target
-
-		"""
+	stage('Build'){
+		sh "mvn clean install -Dmaven.test.skip=true"
 	}
-	
-	stage('Code Scan'){
-		withSonarQubeEnv(credentialsId: 'SonarQubeCreds') {
-			sh "${sonarHome}/bin/sonar-scanner"
-		}
-		
+	stage('Test Cases Execution'){
+		sh "mvn clean org.jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test"
 	}
-	stage('Code Coverage ') {
-	    //sh "curl -o coverage.json 'http://35.154.151.174:9000/sonar/api/measures/component?componentKey=com.java.example:java-example&metricKeys=coverage';sonarCoverage=`jq '.component.measures[].value' coverage.json`;if [ 1 -eq '\$(echo '\${sonarCoverage} >= 50'| bc)' ]; then echo 'Failed' ;exit 1;else echo 'Passed'; fi"
+	stage('Sonr Analysis'){
 	}
-	
-	stage('Code Deployment'){
-		deploy adapters: [tomcat9(credentialsId: 'TomcatCreds', path: '', url: 'http://54.197.62.94:8080/')], contextPath: 'Planview', onFailure: false, war: 'target/*.war'
+	stage('Archieve Artifacts'){
+		arcgieveArtifacts artifacts: 'target/*.war'
+	}
+	stage('Deployment'){
+		deploy adapters: [tomcat9(credentialsId:'TomcatCreds',path:"",url:'http://localhost:8090/')],contextPath:'counterwebapp',war:'target/*.war'
+	}
+	stage('Notification'){
+		emailext(
+			subject:"Job Completed",
+			body:"Jenkins Pipeline Job for Maven got completed!",
+			to:"suhas123.p@gmail.com"
+		)
 	}
 }
