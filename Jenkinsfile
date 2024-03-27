@@ -1,26 +1,51 @@
-node(){
-	stage('checkout code'){
-		checkout scm
-	}
-	stage('Build'){
-		sh "mvn clean install -Dmaven.test.skip=true"
-	}
-	stage('Test Cases Execution'){
-		sh "mvn clean org.jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test"
-	}
-	stage('Sonr Analysis'){
-	}
-	stage('Archieve Artifacts'){
-		arcgieveArtifacts artifacts: 'target/*.war'
-	}
-	stage('Deployment'){
-		deploy adapters: [tomcat9(credentialsId:'TomcatCreds',path:"",url:'http://localhost:8090/')],contextPath:'counterwebapp',war:'target/*.war'
-	}
-	stage('Notification'){
-		emailext(
-			subject:"Job Completed",
-			body:"Jenkins Pipeline Job for Maven got completed!",
-			to:"suhas123.p@gmail.com"
-		)
-	}
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                bat 'mvn clean install -Dmaven.test.skip=true'
+            }
+        }
+        
+        stage('Test Cases Execution') {
+            steps {
+                bat 'mvn clean org.jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test'
+            }
+        }
+        
+        stage('Sonar Analysis') {
+            steps {
+                // Add Sonar analysis steps here for Windows
+            }
+        }
+        
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.war'
+            }
+        }
+        
+        stage('Deployment') {
+            steps {
+                deploy adapters: [tomcat9(credentialsId:'TomcatCreds',path:"",url:'http://localhost:8090/')],contextPath:'counterwebapp',war:'target/*.war'
+            }
+        }
+        
+        stage('Notification') {
+            steps {
+                emailext(
+                    subject: "Job Completed",
+                    body: "Jenkins Pipeline Job for Maven got completed!",
+                    to: "suhas123.p@gmail.com"
+                )
+            }
+        }
+    }
 }
