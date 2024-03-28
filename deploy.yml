@@ -1,4 +1,4 @@
-- hosts: tomcatservers
+- hosts: webservers
   environment:
     JAVA_HOME: "C:\\Program Files\\Java\\jdk-21"
   vars:
